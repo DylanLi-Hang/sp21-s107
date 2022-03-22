@@ -5,7 +5,7 @@ import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author TODO: DYLANLI
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -114,6 +114,44 @@ public class Model extends Observable {
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
 
+        board.setViewingPerspective(side);
+        int size = board.size();
+
+        for(int i=0;i<size;i++)
+        {
+            boolean state[] = new boolean[5];
+            for(int j=size-1;j>=0;j--)
+            {
+                Tile tilenow = board.tile(i, j);
+                if(tilenow==null)
+                    continue;
+                System.out.println("i"+i+" j"+j+":"+tilenow.value());
+                if(lookup_merge(i,j)!=-1 && !state[lookup_merge(i,j)])
+                {
+                    int to_row = lookup_merge(i,j);
+                    this.score += tilenow.value()*2;
+                    board.move(i,to_row,tilenow);
+                    state[to_row] = true;
+                    changed = true;
+                }
+                else
+                {
+                    if(j==size-1) continue;
+                    int up = j;
+                    do{
+                        up++;
+                    }
+                    while(up+1<size && board.tile(i,up)==null && board.tile(i,up+1)==null);
+                    if(board.tile(i,up)==null)
+                    {
+                        board.move(i,up,tilenow);
+                        changed = true;
+                    }
+                }
+            }
+        }
+        board.setViewingPerspective(Side.NORTH);
+
         checkGameOver();
         if (changed) {
             setChanged();
@@ -121,6 +159,14 @@ public class Model extends Observable {
         return changed;
     }
 
+    public int lookup_merge(int col, int row)
+    {
+        if(row==board.size()-1) return -1;
+        for(int i=row+1;i<board.size();i++)
+            if (board.tile(col, i)!=null && board.tile(col, i).value() == board.tile(col, row).value())
+                return i;
+        return -1;
+    }
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.
      */
@@ -138,7 +184,18 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
-        return false;
+        System.out.println("the board size is");
+        System.out.println(b.size());
+        int size = b.size();
+        for(int i=0;i<size;i++) {
+            for (int j = 0; j < size; j++) {
+                System.out.println("第" + i + "行" + j + "是：");
+                System.out.println(b.tile(i, j));
+                if (b.tile(i, j) == null)
+                    return true;
+            }
+        }
+            return false;
     }
 
     /**
@@ -148,6 +205,13 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
+        int size = b.size();
+        for(int i=0;i<size;i++) {
+            for (int j = 0; j < size; j++) {
+                if (b.tile(i, j)!=null && b.tile(i, j).value() == MAX_PIECE)
+                    return true;
+            }
+        }
         return false;
     }
 
@@ -159,6 +223,23 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+
+        int size = b.size();
+
+        int[][] board = new int[size+1][size+1];
+        for(int j=0;j<size;j++) {
+            for (int i = 0; i < size; i++) {
+                if (b.tile(i, j)==null)
+                    return true;
+                board[i][j] = b.tile(i, j).value();
+            }
+        }
+        for(int i = 0;i<size;i++) {
+            for (int j = 0; j < size; j++) {
+                    if( (i+1<size && board[i][j]==board[i+1][j]) || (j+1 < size && board[i][j]==board[i][j+1]))
+                        return true;
+            }
+        }
         return false;
     }
 
