@@ -9,11 +9,15 @@ public class IntListExercises {
      * @param lst IntList from Lecture
      */
     public static void addConstant(IntList lst, int c) {
-        IntList head = lst;
-        do{
-            head.first += c;
-            head = head.rest;
-        }while (head != null);
+        if(lst == null) return;
+//        IntList head = lst;
+        lst.first += c;
+        lst = lst.rest;
+        addConstant(lst, c);
+//        do{
+//            head.first += c;
+//            head = head.rest;
+//        }while (head != null);
     }
 
     /**
